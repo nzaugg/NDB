@@ -3,12 +3,18 @@ NDB
 
 Object Databaase for .NET
 
+* 1
+* 2
+	* 3
+	* 4
+	* 5
+
 Features
 ========
 One single database file to store all data:
-Meta-model
-Objects
-Indexes
+	Meta-model
+	Objects
+	Indexes
 Handles cycle detection and circular references
 Safe access from many threads and from many processes
 Store private members (even marked as readonly)
