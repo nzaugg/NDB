@@ -1,7 +1,7 @@
 NDB
 ===
 
-Object Databaase for .NET
+NDB is an Object Database for .NET written in C# (forked from the NDatabase project @ http://ndatabase.codeplex.com). It functions like a Document/Object Database but is also ACID. The database is quite functional in it's current state but a lot more features are planned for this branch.
 
 Features
 ========
