@@ -8,8 +8,8 @@
     <ProjectGuid>{4B6993D5-995D-4AAA-BBCE-423D1B5451F6}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NDatabase</RootNamespace>
-    <AssemblyName>NDatabase3</AssemblyName>
+    <RootNamespace>NDB</RootNamespace>
+    <AssemblyName>NDB3</AssemblyName>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -20,7 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\NDatabase3.xml</DocumentationFile>
+    <DocumentationFile>bin\Debug\NDB3.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,13 +29,13 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\NDatabase3.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\NDB3.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>ndatabase.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>NDB.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -354,22 +354,22 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ndatabase.snk" />
+    <None Include="NDB.snk" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>echo POSTBUILDSTEP for $(ProjectName)
  
-xcopy "$(TargetPath)" "$(SolutionDir)Artifacts" /i /d /y
+xcopy "$(TargetPath)" "$(SolutionDir)..\Artifacts\" /i /d /y
 if errorlevel 1 goto BuildEventFailed
 
-xcopy "$(TargetPath)" "$(SolutionDir)UnitTests" /i /d /y
+xcopy "$(TargetPath)" "$(SolutionDir)UnitTests\" /i /d /y
 if errorlevel 1 goto BuildEventFailed
 
-xcopy "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)Artifacts" /i /d /y
+xcopy "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)..\Artifacts\" /i /d /y
 if errorlevel 1 goto BuildEventFailed
-xcopy "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)UnitTests" /i /d /y
+xcopy "$(TargetDir)$(TargetName).pdb" "$(SolutionDir)UnitTests\" /i /d /y
 if errorlevel 1 goto BuildEventFailed
  
 REM Exit properly because the build will not fail 

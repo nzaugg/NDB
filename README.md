@@ -50,8 +50,12 @@ Features
 	* Silverlight 4, Silverlight 5 (see limitations)
 	* Windows Phone 7.1, Windows Phone 7.5 (see limitations)
 	* Mono (4.0)
-	* NuGet
-	
+* Available on NuGet
+
+NDB Unique Features
+===================
+* Collection Enumeration (see the types stored in a db)
+
 Planned Features
 ================
 * Better support for Identity fields
@@ -66,4 +70,3 @@ Planned Features
 * Map / Reduce Queries
 * Compression & Encryption
 * Scope Limiting (excluding some related objects when querying for objects)
-* Collection Enumeration (see the types stored in a db)

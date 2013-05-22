@@ -11,86 +11,88 @@ using NDatabase.Triggers;
 
 namespace NDatabase.Core
 {
-    /// <summary>
-    ///   The interface of all that a StorageEngine (Main concept in ODB) must do.
-    /// </summary>
-    internal interface IStorageEngine : ITriggersEngine, IClassInfoProvider, IQueryEngine
-    {
-        OID Store<T>(OID oid, T plainObject) where T : class;
+	/// <summary>
+	///   The interface of all that a StorageEngine (Main concept in ODB) must do.
+	/// </summary>
+	internal interface IStorageEngine : ITriggersEngine, IClassInfoProvider, IQueryEngine
+	{
+		IEnumerable<ClassInfo> GetClassInfo();
 
-        /// <summary>
-        ///   Store an object in an database.
-        /// </summary>
-        /// <remarks>
-        ///   Store an object in an database. To detect if object must be updated or insert, we use the cache. To update an object, it must be first selected from the database. When an object is to be stored, if it exist in the cache, then it will be updated, else it will be inserted as a new object. If the object is null, the cache will be used to check if the meta representation is in the cache
-        /// </remarks>
-        OID Store<T>(T plainObject) where T : class;
+		OID Store<T>(OID oid, T plainObject) where T : class;
 
-        void DeleteObjectWithOid(OID oid);
+		/// <summary>
+		///   Store an object in an database.
+		/// </summary>
+		/// <remarks>
+		///   Store an object in an database. To detect if object must be updated or insert, we use the cache. To update an object, it must be first selected from the database. When an object is to be stored, if it exist in the cache, then it will be updated, else it will be inserted as a new object. If the object is null, the cache will be used to check if the meta representation is in the cache
+		/// </remarks>
+		OID Store<T>(T plainObject) where T : class;
 
-        OID Delete<T>(T plainObject) where T : class;
+		void DeleteObjectWithOid(OID oid);
 
-        void Close();
+		OID Delete<T>(T plainObject) where T : class;
 
-        IObjectReader GetObjectReader();
+		void Close();
 
-        IObjectWriter GetObjectWriter();
+		IObjectReader GetObjectReader();
 
-        IInternalTriggerManager GetTriggerManager();
+		IObjectWriter GetObjectWriter();
 
-        ISession GetSession();
+		IInternalTriggerManager GetTriggerManager();
 
-        void Commit();
+		ISession GetSession();
 
-        void Rollback();
+		void Commit();
 
-        ObjectInfoHeader GetObjectInfoHeaderFromOid(OID oid);
+		void Rollback();
 
-        void DefragmentTo(string newFileName);
+		ObjectInfoHeader GetObjectInfoHeaderFromOid(OID oid);
 
-        IList<long> GetAllObjectIds();
+		void DefragmentTo(string newFileName);
 
-        bool IsClosed();
+		IList<long> GetAllObjectIds();
 
-        void SetDatabaseId(IDatabaseId databaseId);
+		bool IsClosed();
 
-        void SetCurrentIdBlockInfos(CurrentIdBlockInfo currentIdBlockInfo);
+		void SetDatabaseId(IDatabaseId databaseId);
 
-        IDbIdentification GetBaseIdentification();
+		void SetCurrentIdBlockInfos(CurrentIdBlockInfo currentIdBlockInfo);
 
-        /// <param name="className"> The class name on which the index must be created </param>
-        /// <param name="name"> The name of the index </param>
-        /// <param name="indexFields"> The list of fields of the index </param>
-        /// <param name="acceptMultipleValuesForSameKey"> </param>
-        void AddIndexOn(string className, string name, string[] indexFields, bool acceptMultipleValuesForSameKey);
+		IDbIdentification GetBaseIdentification();
 
-        void AddCommitListener(ICommitListener commitListener);
+		/// <param name="className"> The class name on which the index must be created </param>
+		/// <param name="name"> The name of the index </param>
+		/// <param name="indexFields"> The list of fields of the index </param>
+		/// <param name="acceptMultipleValuesForSameKey"> </param>
+		void AddIndexOn(string className, string name, string[] indexFields, bool acceptMultipleValuesForSameKey);
 
-        IOdbList<ICommitListener> GetCommitListeners();
+		void AddCommitListener(ICommitListener commitListener);
 
-        /// <summary>
-        ///   Returns the object used to refactor the database
-        /// </summary>
-        IRefactorManager GetRefactorManager();
+		IOdbList<ICommitListener> GetCommitListeners();
 
-        void ResetCommitListeners();
+		/// <summary>
+		///   Returns the object used to refactor the database
+		/// </summary>
+		IRefactorManager GetRefactorManager();
 
-        IDatabaseId GetDatabaseId();
+		void ResetCommitListeners();
 
-        /// <summary>
-        ///   Used to disconnect the object from the current session.
-        /// </summary>
-        /// <remarks>
-        ///   Used to disconnect the object from the current session. The object is removed from the cache
-        /// </remarks>
-        void Disconnect<T>(T plainObject) where T : class;
+		IDatabaseId GetDatabaseId();
 
-        void RebuildIndex(string className, string indexName);
+		/// <summary>
+		///   Used to disconnect the object from the current session.
+		/// </summary>
+		/// <remarks>
+		///   Used to disconnect the object from the current session. The object is removed from the cache
+		/// </remarks>
+		void Disconnect<T>(T plainObject) where T : class;
 
-        void DeleteIndex(string className, string indexName);
+		void RebuildIndex(string className, string indexName);
 
-        IIdManager GetIdManager();
+		void DeleteIndex(string className, string indexName);
 
-        IInternalTriggerManager GetLocalTriggerManager();
-    }
+		IIdManager GetIdManager();
+
+		IInternalTriggerManager GetLocalTriggerManager();
+	}
 }
