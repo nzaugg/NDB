@@ -1,6 +1,5 @@
 using System.IO;
 using System.Threading;
-using System.Linq;
 using NDatabase.Api;
 using NDatabase.Api.Query;
 using NDatabase.Api.Triggers;
@@ -15,214 +14,208 @@ using NDatabase.IO;
 using NDatabase.Meta;
 using NDatabase.Meta.Introspector;
 using NDatabase.Triggers;
-using System.Collections.Generic;
 
 namespace NDatabase
 {
-	/// <summary>
-	///   A basic adapter for ODB interface
-	/// </summary>
-	internal sealed class Odb : IOdb, IOdbForTrigger, IClassInfoProvider
-	{
-		private readonly IStorageEngine _storageEngine;
-		private IOdbExt _ext;
+    /// <summary>
+    ///   A basic adapter for ODB interface
+    /// </summary>
+    internal sealed class Odb : IOdb, IOdbForTrigger, IClassInfoProvider
+    {
+        private readonly IStorageEngine _storageEngine;
+        private IOdbExt _ext;
 
-		/// <summary>
-		///   protected Constructor
-		/// </summary>
-		private Odb(string fileName)
-			: this(new StorageEngine(new FileIdentification(fileName)))
-		{
-		}
+        /// <summary>
+        ///   protected Constructor
+        /// </summary>
+        private Odb(string fileName)
+            : this(new StorageEngine(new FileIdentification(fileName)))
+        {
+        }
 
-		private Odb()
-			: this(new StorageEngine(new InMemoryIdentification()))
-		{
-		}
+        private Odb()
+            : this(new StorageEngine(new InMemoryIdentification()))
+        {
+        }
 
-		internal Odb(IStorageEngine storageEngine)
-		{
-			_storageEngine = storageEngine;
-		}
-		
-		internal static Odb GetInstance(string fileName)
-		{
-			var odb = new Odb(fileName);
-			odb.TriggerManagerFor<object>().AddSelectTrigger(new EnrichWithOidTrigger());
+        internal static Odb GetInstance(string fileName)
+        {
+            var odb = new Odb(fileName);
+            odb.TriggerManagerFor<object>().AddSelectTrigger(new EnrichWithOidTrigger());
 
-			return odb;
-		}
+            return odb;
+        }
 
-		internal static Odb GetInMemoryInstance()
-		{
-			var odb = new Odb();
-			odb.TriggerManagerFor<object>().AddSelectTrigger(new EnrichWithOidTrigger());
+        internal static Odb GetInMemoryInstance()
+        {
+            var odb = new Odb();
+            odb.TriggerManagerFor<object>().AddSelectTrigger(new EnrichWithOidTrigger());
 
-			return odb;
-		}
+            return odb;
+        }
 
-		#region IOdb Members
+        internal Odb(IStorageEngine storageEngine)
+        {
+            _storageEngine = storageEngine;
+        }
 
-		public void Commit()
-		{
-			_storageEngine.Commit();
-		}
+        #region IOdb Members
 
-		public void Rollback()
-		{
-			_storageEngine.Rollback();
-		}
+        public void Commit()
+        {
+            _storageEngine.Commit();
+        }
 
-		public OID Store<T>(T plainObject) where T : class
-		{
-			return _storageEngine.Store(plainObject);
-		}
+        public void Rollback()
+        {
+            _storageEngine.Rollback();
+        }
 
-		public IObjectSet<T> QueryAndExecute<T>()
-		{
-			return Query<T>().Execute<T>();
-		}
+        public OID Store<T>(T plainObject) where T : class
+        {
+            return _storageEngine.Store(plainObject);
+        }
 
-		public IQuery Query<T>()
-		{
-			var criteriaQuery = new SodaQuery(typeof(T));
-			((IInternalQuery)criteriaQuery).SetQueryEngine(_storageEngine);
-			return criteriaQuery;
-		}
+        public IObjectSet<T> QueryAndExecute<T>()
+        {
+            return Query<T>().Execute<T>();
+        }
 
-		public IValuesQuery ValuesQuery<T>() where T : class
-		{
-			var criteriaQuery = new ValuesCriteriaQuery(typeof(T));
-			((IInternalQuery)criteriaQuery).SetQueryEngine(_storageEngine);
-			return criteriaQuery;
-		}
+        public IQuery Query<T>()
+        {
+            var criteriaQuery = new SodaQuery(typeof(T));
+            ((IInternalQuery)criteriaQuery).SetQueryEngine(_storageEngine);
+            return criteriaQuery;
+        }
 
-		public IValuesQuery ValuesQuery<T>(OID oid) where T : class
-		{
-			var criteriaQuery = new ValuesCriteriaQuery(typeof(T), oid);
-			((IInternalQuery)criteriaQuery).SetQueryEngine(_storageEngine);
-			return criteriaQuery;
-		}
+        public IValuesQuery ValuesQuery<T>() where T : class
+        {
+            var criteriaQuery = new ValuesCriteriaQuery(typeof(T));
+            ((IInternalQuery)criteriaQuery).SetQueryEngine(_storageEngine);
+            return criteriaQuery;
+        }
 
-		public ILinqQueryable<T> AsQueryable<T>()
-		{
-			if (typeof(T) == typeof(object)) 
-				return new PlaceHolderQuery<T>(this).AsQueryable();
+        public IValuesQuery ValuesQuery<T>(OID oid) where T : class
+        {
+            var criteriaQuery = new ValuesCriteriaQuery(typeof(T), oid);
+            ((IInternalQuery)criteriaQuery).SetQueryEngine(_storageEngine);
+            return criteriaQuery;
+        }
 
-			var linqQuery = new LinqQuery<T>(this);
-			return linqQuery.AsQueryable();
-		}
+        public ILinqQueryable<T> AsQueryable<T>()
+        {
+            if (typeof(T) == typeof(object)) 
+                return new PlaceHolderQuery<T>(this).AsQueryable();
 
-		public IValues GetValues(IValuesQuery query)
-		{
-			return _storageEngine.GetValues((IInternalValuesQuery) query, -1, -1);
-		}
+            var linqQuery = new LinqQuery<T>(this);
+            return linqQuery.AsQueryable();
+        }
 
-		public void Close()
-		{
-			_storageEngine.Close();
-		}
+        public IValues GetValues(IValuesQuery query)
+        {
+            return _storageEngine.GetValues((IInternalValuesQuery) query, -1, -1);
+        }
 
-		public OID Delete<T>(T plainObject) where T : class
-		{
-			return _storageEngine.Delete(plainObject);
-		}
+        public void Close()
+        {
+            _storageEngine.Close();
+        }
 
-		/// <summary>
-		///   Delete an object from the database with the id
-		/// </summary>
-		/// <param name="oid"> The object id to be deleted </param>
-		public void DeleteObjectWithId(OID oid)
-		{
-			_storageEngine.DeleteObjectWithOid(oid);
-		}
+        public OID Delete<T>(T plainObject) where T : class
+        {
+            return _storageEngine.Delete(plainObject);
+        }
 
-		public OID GetObjectId<T>(T plainObject) where T : class
-		{
-			return _storageEngine.GetObjectId(plainObject, true);
-		}
+        /// <summary>
+        ///   Delete an object from the database with the id
+        /// </summary>
+        /// <param name="oid"> The object id to be deleted </param>
+        public void DeleteObjectWithId(OID oid)
+        {
+            _storageEngine.DeleteObjectWithOid(oid);
+        }
 
-		public object GetObjectFromId(OID id)
-		{
-			return _storageEngine.GetObjectFromOid(id);
-		}
+        public OID GetObjectId<T>(T plainObject) where T : class
+        {
+            return _storageEngine.GetObjectId(plainObject, true);
+        }
 
-		public void DefragmentTo(string newFileName)
-		{
-			_storageEngine.DefragmentTo(newFileName);
-		}
+        public object GetObjectFromId(OID id)
+        {
+            return _storageEngine.GetObjectFromOid(id);
+        }
 
-		public IIndexManager IndexManagerFor<T>() where T : class
-		{
-			var clazz = typeof (T);
-			var classInfo = _storageEngine.GetSession().GetMetaModel().GetClassInfo(clazz, false);
+        public void DefragmentTo(string newFileName)
+        {
+            _storageEngine.DefragmentTo(newFileName);
+        }
 
-			if (classInfo == null)
-			{
-				var classInfoList = ClassIntrospector.Introspect(clazz, true);
-				_storageEngine.GetObjectWriter().AddClasses(classInfoList);
-				classInfo = classInfoList.GetMainClassInfo();
-			}
+        public IIndexManager IndexManagerFor<T>() where T : class
+        {
+            var clazz = typeof (T);
+            var classInfo = _storageEngine.GetSession().GetMetaModel().GetClassInfo(clazz, false);
 
-			return new IndexManager(_storageEngine, classInfo);
-		}
+            if (classInfo == null)
+            {
+                var classInfoList = ClassIntrospector.Introspect(clazz, true);
+                _storageEngine.GetObjectWriter().AddClasses(classInfoList);
+                classInfo = classInfoList.GetMainClassInfo();
+            }
 
-		public ITriggerManager TriggerManagerFor<T>() where T : class
-		{
-			return new TriggerManager<T>(_storageEngine);
-		}
+            return new IndexManager(_storageEngine, classInfo);
+        }
 
-		public IRefactorManager GetRefactorManager()
-		{
-			return _storageEngine.GetRefactorManager();
-		}
+        public ITriggerManager TriggerManagerFor<T>() where T : class
+        {
+            return new TriggerManager<T>(_storageEngine);
+        }
 
-		public IOdbExt Ext()
-		{
-			return _ext ?? (_ext = new OdbExt(_storageEngine));
-		}
+        public IRefactorManager GetRefactorManager()
+        {
+            return _storageEngine.GetRefactorManager();
+        }
 
-		public void Disconnect<T>(T plainObject) where T : class
-		{
-			_storageEngine.Disconnect(plainObject);
-		}
+        public IOdbExt Ext()
+        {
+            return _ext ?? (_ext = new OdbExt(_storageEngine));
+        }
 
-		public bool IsClosed()
-		{
-			return _storageEngine.IsClosed();
-		}
+        public void Disconnect<T>(T plainObject) where T : class
+        {
+            _storageEngine.Disconnect(plainObject);
+        }
 
-		public void Dispose()
-		{
-			try
-			{
-				Close();
-			}
-			finally
-			{
-				if (_storageEngine.GetBaseIdentification() is FileIdentification)
-				{
-					var fileName = _storageEngine.GetBaseIdentification().FileName;
-					Monitor.Exit(string.Intern(Path.GetFullPath(fileName)));
-				}
-			}
-		}
+        public bool IsClosed()
+        {
+            return _storageEngine.IsClosed();
+        }
 
-		#endregion
+        public void Dispose()
+        {
+            try
+            {
+                Close();
+            }
+            finally
+            {
+                if (_storageEngine.GetBaseIdentification() is FileIdentification)
+                {
+                    var fileName = _storageEngine.GetBaseIdentification().FileName;
+                    Monitor.Exit(string.Intern(Path.GetFullPath(fileName)));    
+                }
+            }
+        }
 
-		public IEnumerable<string> GetClassNames()
-		{
-			return _storageEngine.GetClassInfo().Select(n => n.FullClassName);
-		}
+        #endregion
 
-		public IStorageEngine GetStorageEngine()
-		{
-			return _storageEngine;
-		}
+        internal IStorageEngine GetStorageEngine()
+        {
+            return _storageEngine;
+        }
 
-		public IObjectIntrospectionDataProvider GetClassInfoProvider()
-		{
-			return _storageEngine.GetClassInfoProvider();
-		}
-	}
+        public IObjectIntrospectionDataProvider GetClassInfoProvider()
+        {
+            return _storageEngine.GetClassInfoProvider();
+        }
+    }
 }

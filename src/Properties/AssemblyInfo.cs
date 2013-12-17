@@ -7,13 +7,13 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 
-[assembly: AssemblyTitle("NDB")]
+[assembly: AssemblyTitle("NDatabase")]
 [assembly: AssemblyDescription("C# Lightweight Object Database")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("NDB")]
-[assembly: AssemblyProduct("NDB")]
+[assembly: AssemblyCompany("NDatabase")]
+[assembly: AssemblyProduct("NDatabase")]
 [assembly: AssemblyCopyright("Copyright ©  2013")]
-[assembly: AssemblyTrademark("NDB")]
+[assembly: AssemblyTrademark("NDatabase")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
